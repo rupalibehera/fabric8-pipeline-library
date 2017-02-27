@@ -7,13 +7,14 @@ def call(body) {
   body()
 
   // For now it is mainly focussed for UI tests
-  def serverURL = config.serverURL
+  def serverURL = config.serverURL ?: "http://google.com"
   def testSourceRepoURL = config.testSourceRepoURL
   def testSourceRepoBranch = config.testSourceRepoBranch ?: "master"
   def gitUser = config.gitUser ?: "fabric8-release"
   def gitEmail = config.gitEmail ?: "fabric8-admin@googlegroups.com"
   def commandToExecuteTests = config.commandToExecuteTests
   def pathToResultsDir = config.pathToResultsDir
+  def containerName = config.containerName ?: 'maven'
 
   container(name: containerName) {
     try{
