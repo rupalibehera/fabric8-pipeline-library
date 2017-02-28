@@ -18,9 +18,7 @@ def call(body) {
 
   container(name: containerName) {
     try{
-          checkout scm: [$class          : 'GitSCM',
-                   useRemoteConfigs: [[url: testSourceRepoURL]],
-                   branches        : [[name: "refs/remotes/origin/${testSourceRepoBranch}"]]]
+          git url: "$testSourceRepoURL", branch: "$testSourceRepoBranch"
           sh "ls -la"
           // install if something is required
           // run the command
