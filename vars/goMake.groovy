@@ -27,7 +27,7 @@ def call(body) {
     sh "mkdir -p ${buildPath}"
 
     dir(buildPath) {
-        //checkout scm
+        checkout scm
 
         container(name: 'go') {
             stage ('build binary'){
