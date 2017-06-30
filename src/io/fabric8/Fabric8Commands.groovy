@@ -155,15 +155,7 @@ def setupWorkspaceForRelease(String project, Boolean useGitTagForNextVersion, St
 def getNewVersionFromTag(pomVersion = null) {
     def version = '1.0.0'
 
-    // Set known prerelease prefixes, needed for the proper sort order
-    // in the next command
-    sh "git config versionsort.prereleaseSuffix -RC"
-    sh "git config versionsort.prereleaseSuffix -M"
-
-    // if the repo has no tags this command will fail
-    sh "git tag --sort version:refname | tail -1 > version.tmp"
-
-    def tag = readFile 'version.tmp'
+    def tag = getTag()
 
     if (tag == null || tag.size() == 0) {
         echo "no existing tag found using version ${version}"
@@ -179,34 +171,7 @@ def getNewVersionFromTag(pomVersion = null) {
     if (semver.matches()) {
         echo "Version ${tag} is semver compatible"
 
-        def majorVersion = semver.group('major') as int
-        def minorVersion = (semver.group('minor') ?: 0) as int
-        def patchVersion = ((semver.group('patch') ?: 0) as int) + 1
-
-        echo "Testing to see if current POM version ${pomVersion} is semver compatible"
-
-        def pomSemver = pomVersion.trim() =~ /(?i)\bv?(?<major>0|[1-9]\d*)(?:\.(?<minor>0|[1-9]\d*)(?:\.(?<patch>0|[1-9]\d*))?)?(?:-(?<prerelease>[\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+(?<build>[\da-z\-]+(?:\.[\da-z\-]+)*))?\b/
-        if (pomSemver.matches()) {
-            echo "Current POM version ${pomVersion} is semver compatible"
-
-            def pomMajorVersion = pomSemver.group('major') as int
-            def pomMinorVersion = (pomSemver.group('minor') ?: 0) as int
-            def pomPatchVersion = (pomSemver.group('patch') ?: 0) as int
-
-            if (pomMajorVersion > majorVersion ||
-                    (pomMajorVersion == majorVersion &&
-                            (pomMinorVersion > minorVersion) || (pomMinorVersion == minorVersion && pomPatchVersion > patchVersion)
-                    )
-            ) {
-                majorVersion = pomMajorVersion
-                minorVersion = pomMinorVersion
-                patchVersion = pomPatchVersion
-            }
-        }
-
-        def newVersion = "${majorVersion}.${minorVersion}.${patchVersion}"
-        echo "New version is ${newVersion}"
-        return newVersion
+        return getSemverCompatibleVersion(semver, pomVersion)
     } else {
         echo "Version is not semver compatible"
 
@@ -227,6 +192,67 @@ def getNewVersionFromTag(pomVersion = null) {
             return previousReleaseVersion.substring(0, previousReleaseVersion.lastIndexOf('.') + 1) + (microVersion + 1)
         }
     }
+}
+
+def getTag() {
+    // Set known prerelease prefixes, needed for the proper sort order
+    // in the next command
+    sh "git config versionsort.prereleaseSuffix -RC"
+    sh "git config versionsort.prereleaseSuffix -M"
+
+    // if the repo has no tags this command will fail
+    sh "git tag --sort version:refname | tail -1 > version.tmp"
+
+    def tag = readFile 'version.tmp'
+    return tag
+}
+
+def getSemverCompatibleVersion(semver, pomVersion) {
+
+    def majorVersion = semver.group('major') as int
+    def minorVersion = (semver.group('minor') ?: 0) as int
+    def patchVersion = ((semver.group('patch') ?: 0) as int) + 1
+
+    echo "Testing to see if current POM version ${pomVersion} is semver compatible"
+
+    def pomSemver = pomVersion =~ /(?i)\bv?(?<major>0|[1-9]\d*)(?:\.(?<minor>0|[1-9]\d*)(?:\.(?<patch>0|[1-9]\d*))?)?(?:-(?<prerelease>[\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+(?<build>[\da-z\-]+(?:\.[\da-z\-]+)*))?\b/
+
+    if (pomSemver.matches()) {
+        echo "Current POM version ${pomVersion} is semver compatible"
+
+        def pomMajorVersion = pomSemver.group('major') as int
+        def pomMinorVersion = (pomSemver.group('minor') ?: 0) as int
+        def pomPatchVersion = (pomSemver.group('patch') ?: 0) as int
+
+        if (pomMajorVersion > majorVersion ||
+                (pomMajorVersion == majorVersion &&
+                        (pomMinorVersion > minorVersion) || (pomMinorVersion == minorVersion && pomPatchVersion > patchVersion)
+                )
+        ) {
+            majorVersion = pomMajorVersion
+            minorVersion = pomMinorVersion
+            patchVersion = pomPatchVersion
+        }
+    }
+
+    def newVersion = "${majorVersion}.${minorVersion}.${patchVersion}"
+    echo "New version is ${newVersion}"
+    return newVersion
+}
+
+def getNextReleaseVersion(projectVersion){
+    def version = '1.0.0'
+
+    def tag = getTag()
+    if (tag == null || tag.size() == 0) {
+        echo "no existing tag found using version ${version}"
+        return version
+    }
+
+    tag = tag.trim()
+    def semver = tag =~ /(?i)\bv?(?<major>0|[1-9]\d*)(?:\.(?<minor>0|[1-9]\d*)(?:\.(?<patch>0|[1-9]\d*))?)?(?:-(?<prerelease>[\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+(?<build>[\da-z\-]+(?:\.[\da-z\-]+)*))?\b/
+    semver.matches()
+    return getSemverCompatibleVersion(semver, projectVersion)
 }
 
 def stageSonartypeRepo() {
