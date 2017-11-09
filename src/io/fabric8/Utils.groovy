@@ -606,4 +606,9 @@ def isKubernetesPluginVersion013(){
     return isNewVersion
 }
 
+@NonCPS
+private static String cleanName(String s) {
+  return s.replaceAll(/\W/, '_').toUpperCase()
+}
+
 return this
