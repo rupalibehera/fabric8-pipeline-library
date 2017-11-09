@@ -1,10 +1,7 @@
 package test.groovy
+
 import static org.assertj.core.api.Assertions.assertThat
 
-import java.nio.charset.Charset
-
-import org.assertj.core.util.Files
-import io.fabric8.Utils
 import com.lesfurets.jenkins.unit.BasePipelineTest
 import org.junit.Before
 import org.junit.Test
