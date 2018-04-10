@@ -43,6 +43,17 @@ def call(body) {
         template = true
     }
     container('clients') {
+        flow.setupK8sConfig()
+
+        sh "cat /root/home/.oc/cd.conf"
+
+        echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        sh "oc version"
+        sh "oc whoami"
+        sh "oc get --all namespaces"
+        sh "oc get dc --all namespaces"
+        sh "oc status -v"
+        sh "cat $KUBECONFIG"
 
         try {
             sh "oc get project ${openShiftProject} | grep Active"
