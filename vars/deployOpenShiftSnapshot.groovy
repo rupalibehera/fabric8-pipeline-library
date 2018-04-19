@@ -53,7 +53,6 @@ def call(body) {
         sh "oc get namespaces"
         sh "oc get dc --all-namespaces=true"
         sh "oc status -v"
-        sh "cat $KUBECONFIG"
 
         try {
             sh "oc get project ${openShiftProject} | grep Active"
