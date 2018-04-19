@@ -50,8 +50,8 @@ def call(body) {
         echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
         sh "oc version"
         sh "oc whoami"
-        sh "oc get --all namespaces"
-        sh "oc get dc --all namespaces"
+        sh "oc get namespaces"
+        sh "oc get dc --all-namespaces=true"
         sh "oc status -v"
         sh "cat $KUBECONFIG"
 
