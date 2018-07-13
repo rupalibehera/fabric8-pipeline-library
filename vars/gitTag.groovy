@@ -7,8 +7,8 @@ def call(body) {
     body.delegate = config
     body()
 
-    flow.setupGitSSH()
     def skipVersionPrefix = config.skipVersionPrefix ?: false
+    flow.setupGitSSH()
 
     if (skipVersionPrefix) {
         sh "git tag -fa ${config.releaseVersion} -m 'Release version ${config.releaseVersion}'"
