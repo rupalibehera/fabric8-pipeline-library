@@ -117,6 +117,8 @@ def getRepoIds() {
     // We write the names of the files that contain the repo ids used for staging.  Each staging repo id is read from each file and returned as a list
     sh 'find target/nexus-staging/staging/  -maxdepth 1 -name "*.properties" > target/nexus-staging/staging/repos.txt'
     def repos = readFile('target/nexus-staging/staging/repos.txt')
+    sh 'cat target/nexus-staging/staging/repos.txt'
+    echo repos
     def list = []
     // workflow closure not working here https://issues.jenkins-ci.org/browse/JENKINS-26481
     def filelines = new String(repos).split('\n')
